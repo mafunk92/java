@@ -1,0 +1,8 @@
+ins 77
+ins 65
+ins 128
+printLDR
+del 65
+printLDR
+add
+countNodes
