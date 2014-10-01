@@ -6,6 +6,7 @@
  *  	
  * Description: 
  * 		Encrypts and Decrypts text using the playfair cipher
+ * 		
  * 
  * Compiles: yes
  * Works: yes 
@@ -19,32 +20,36 @@
  public class Playfair
  {
 	 //Variables
-	 private static boolean debug = false; // debug flag
+	 private static boolean debug = true; // debug flag
 	 private static char key[][] = new char[5][5];
 	 private static String alphabet = "ABCDEFGHIKLMNOPQRSTUVWXYZ";
-	 private static String encM = new String();		//cipher text
-	 private static	String decM = new String();		//clear text
+	 private static String out = new String();
   
 	 //Constructors
 	 public Playfair()
 	 {
 	 } // End Constructor
 	 
-	 //Methods	 
+	 //Methods
+	 /**
+     * Desc: This method will create matrix key
+     * Pre: None
+     * Post: Saves matrix key in global variable key
+     */	 
 	 public void createKey(String k)
 	 {
 		 String combined = new String();
 		 combined = k + alphabet;
 		 	 
          String noDupes=""; //string with no duplicates
-         HashMap<Integer,Character> tc = new HashMap<Integer,Character>();//create a hashmap to store the char's
+         HashMap<Integer,Character> hash = new HashMap<Integer,Character>();//create a hashmap to store the char's
          char [] charArray = combined.toCharArray();
          for (Character c : charArray)//for each char
          {
-             if (!tc.containsValue(c))//if the char is not already in the hashmap
+             if (!hash.containsValue(c))//if the char is not already in the hashmap
                  {
                      noDupes=noDupes + c.toString();   //add the char to the output string
-                     tc.put(c.hashCode(),c); //and add the char to the hashmap
+                     hash.put(c.hashCode(),c); //and add the char to the hashmap
                  }
          }
          
@@ -75,12 +80,16 @@
 				}
 				System.out.println("");
 			 }
-
 			System.out.println("");
 			System.out.println("End createKey()");
 		 } // End debug if
 	 } // End createKey; creates key matrix
 	 
+	 /**
+     * Desc: This method will find index in key of given char
+     * Pre: createKey() to fill global variable key
+     * Post: Returns pair[row,column]
+     */	 
 	 public int[] findIndex(char c)
 	 {
 		 int pair[] = {-1,-1}; // row,column
@@ -101,12 +110,18 @@
 		 return pair;
 	 } // End findIndex
 	 
+	 /**
+     * Desc: This method will convert msg/cipher into cipher/msg
+     * Pre: createKey() to fill golabl variable key
+     * Post: Saves cipher/msg in global variable out
+     */	 
 	 public void transcribe(char ins,String m)
 	 {
 		 String converted = new String(); // final converted msg/cipher
 		 ArrayList<Character> msg = new ArrayList<Character>();
 		 int fIndex[] = new int[2];
 		 int sIndex[] = new int[2];
+		 int mod = 0;
 		  
 		 if(m.length() %2 == 1)
 		 {
@@ -114,14 +129,15 @@
 		 } // End if; checks if string is odd; if true adds 'X' to end
 		 
 		 m = m.replaceAll("J","I");
-		 
+ 		 
 		 for(char c : m.toCharArray())
 		 {
 			 msg.add(c);
 		 } // End for; puts string into ArrayList for easier handling of pairs
+		 	 
+		 if( ins == 'e') mod = 1;
+		 else if(ins == 'd') mod = 4;
 		  
-		 if( ins == 'e')
-		 {
 			do
 			{
 				 fIndex = findIndex(msg.get(0));
@@ -129,15 +145,15 @@
 				 
 				 if(fIndex[0] == sIndex[0]) // same row
 				 {
-					converted = converted + key[fIndex[0]][(fIndex[1]+1)%5];
-					converted = converted + key[sIndex[0]][(sIndex[1]+1)%5];
+					converted = converted + key[fIndex[0]][(fIndex[1]+mod)%5];
+					converted = converted + key[sIndex[0]][(sIndex[1]+mod)%5];
 					msg.remove(0);
 					msg.remove(0);
 				 }
 				 else if(fIndex[1] == sIndex[1]) // same column
 				 {
-					converted = converted + key[(fIndex[0]+1)%5][fIndex[1]];
-					converted = converted + key[(sIndex[0]+1)%5][sIndex[1]];
+					converted = converted + key[(fIndex[0]+mod)%5][fIndex[1]];
+					converted = converted + key[(sIndex[0]+mod)%5][sIndex[1]];
 					msg.remove(0);
 					msg.remove(0);
 				 }
@@ -150,41 +166,8 @@
 				 }
 			 }while(!msg.isEmpty());
 			 
-			 encM = converted;		 
-		 }
-		 else if( ins == 'd')
-		 {
-			 do
-			{
-				 fIndex = findIndex(msg.get(0));
-				 sIndex = findIndex(msg.get(1));
-				 
-				 if(fIndex[0] == sIndex[0]) // same row
-				 {
-					converted = converted + key[fIndex[0]][(fIndex[1]+4)%5];
-					converted = converted + key[sIndex[0]][(sIndex[1]+4)%5];
-					msg.remove(0);
-					msg.remove(0);
-				 }
-				 else if(fIndex[1] == sIndex[1]) // same column
-				 {
-					converted = converted + key[(fIndex[0]+4)%5][fIndex[1]];
-					converted = converted + key[(sIndex[0]+4)%5][sIndex[1]];
-					msg.remove(0);
-					msg.remove(0);
-				 }
-				 else // box
-				 {
-					converted = converted + key[sIndex[0]][fIndex[1]];
-					converted = converted + key[fIndex[0]][sIndex[1]];
-					msg.remove(0);
-					msg.remove(0);
-				 }
-			 }while(!msg.isEmpty());
-			 
-			 decM = converted;
-		 } // end if
-		 
+			out = converted;
+	 
 		 if(debug == true)
 		 {
 			System.out.println("Entered transcribe");
@@ -196,93 +179,84 @@
 		 } // End debug if
 	 } // End transcribe; converts cleartext/ciphertext
 	 
+	 /**
+     * Desc: This method will save global variable out in cipout.txt/msgout.txt
+     * Pre: transcribe() to fill global variable out
+     * Post: Saves out in .txt file cipout/msgout
+     */	 
 	 public void output(char ins)
 	 {
-		 ArrayList<String> out = new ArrayList<String>();
+		 ArrayList<String> outText = new ArrayList<String>();
+		 String outFile = new String();
+		 
+		 for(int i=0;i<out.length();i=i+4)
+			 {
+				 if(out.length() < i+4)
+				 {
+					 outText.add(out.substring(i,i+(out.length()-i)) + " ");
+				 }
+				 else
+				 {
+					 outText.add(out.substring(i,i+4) + " ");
+				 } // End if;
+			 } // End for; adds blocks of 4 char 
+		 if(debug == true) System.out.println(out);
 		 
 		 if(ins == 'e')
 		 {
-			 if(debug == true) System.out.println(encM);
-			 
-			 for(int i=0;i<encM.length();i=i+4)
-			 {
-				out.add(encM.substring(i,i+4) + " ");
-			 } // End for; adds blocks of 4 char
-			 
-			 if(debug == true) System.out.println(out);
-				 
-			 try
-			 {
-					 PrintWriter o = new PrintWriter(new FileWriter("cipout.txt"));
-					 for(int i=0;i<out.size();i++)
-					 {
-						 if(i%8 == 7)
-						 {
-							 o.print(out.get(i));
-							 o.println("");
-						 }
-						 else
-						 {
-							 o.print(out.get(i));
-						 }
-					 }
-					 o.close();
-			 }
-			 catch(IOException e)
-			 {
-				 	System.out.println(e);
-			 } // End catch
+			 outFile = "cipout.txt";		 
 		 }
 		 else if(ins == 'd')
+		 { 	 
+			 outFile = "msgout.txt";		 
+		 } // End if; 
+		 
+		 try
 		 {
-			 if(debug == true) System.out.println(decM);
-			 
-			 for(int i=0;i<decM.length();i=i+4)
-			 {
-				out.add(decM.substring(i,i+4) + " ");
-			 } // End for; adds blocks of 4 char
-			 
-			 if(debug == true) System.out.println(out);
-			 
-			 try
-			{
-				PrintWriter o = new PrintWriter(new FileWriter("msgout.txt"));
-			
-				for(int i=0;i<out.size();i++)
-					 {
-						 if(i%8 == 7)
-						 {
-							 o.print(out.get(i));
-							 o.println("");
-						 }
-						 else
-						 {
-							 o.print(out.get(i));
-						 }
-					 }
-				
+				PrintWriter o = new PrintWriter(new FileWriter(outFile));
+				for(int i=0;i<outText.size();i++)
+				{
+					if(i%8 == 7)
+					{
+						o.print(outText.get(i));
+						o.println("");
+					}
+					else
+					{
+						o.print(outText.get(i));
+					}
+				}	
 				o.close();
-		    }
-			catch(IOException e)
-			{
+		 }
+		 catch(IOException e)
+		 {
 				 System.out.println(e);
-			} // End catch
-		 } // End if; prints converted msg to desired file
+		 } // End catch
 	 } // End output; writes to .txt file
-	  
+	 
+	 /**
+     * Desc: This method will initiate methods needed for encryption
+     * Pre: None
+     * Post: Initiates createKey(),transcribe(),output()
+     */	  
 	 public void encrypt(String k, String m)
 	 {
 		 createKey(k);
 		 transcribe('e',m);
 		 output('e');
-	 } // End enc
+	 } // End encrypt
 	 
+	 /**
+     * Desc: This method will initiate methods needed for decryption
+     * Pre: None
+     * Post: Initiates createKey(), transcribe(), output()
+     */	 
 	 public void decrypt(String k, String c)
 	 {
 		 createKey(k);
 		 transcribe('d',c);
 		 output('d');
-	 } // End dec
+	 } // End decrypt
 	 
 	 //Main
 	 public static void main(String[] args)
