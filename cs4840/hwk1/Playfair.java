@@ -1,13 +1,9 @@
 /**
  * <pre>
- * 
  * Author:
  * 		Michael Funk
- *  	
  * Description: 
  * 		Encrypts and Decrypts text using the playfair cipher
- * 		
- * 
  * Compiles: yes
  * Works: yes 
  * 
