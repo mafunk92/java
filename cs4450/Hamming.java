@@ -158,19 +158,21 @@
        int[] dif = new int[4];
        StringBuilder str = new StringBuilder();
 
+       // Get parity and compute what parrity should be
        parity1[0] =s[1]; parity1[1] = s[2]; parity1[2] = s[4]; parity1[3] = s[8];
        parity2[0] = (s[3]+s[5]+s[7]+s[9]+s[11])%2;
        parity2[1] = (s[3]+s[6]+s[7]+s[10]+s[11])%2;
        parity2[2] = (s[5]+s[6]+s[7]+s[12])%2;
        parity2[3] = (s[9]+s[10]+s[11]+s[12])%2;
 
+       // find differnces between parities
        for(int j=0; j<4;j++)
        {
          dif[j] = (parity1[j] + parity2[j])%2;
        } // End for
 
+       // Parity in reverse binary, flip it to find error index
        int[] difR = dif;
-
        for(int n=0; n<2;n++) // reverse order of dif
        {
          int temp = difR[n];
@@ -178,18 +180,21 @@
          difR[difR.length-n-1] = temp;
        } // End for
 
+       // convert error index from binary to int
        for(int k=0;k<4;k++)
        {
          str.append(difR[k]);
        } // End for
-
        String d = str.toString();
        int ix = Integer.parseInt(d,2);
 
+       // index 0 is only for 2 errors, system will only flip 1 bit
+      // print where error is detected
        if(ix !=0)
        {
          System.out.println("Error detected, Char:\t" + i + " Index:\t" + ix);
        } // End if
+
        if(debug==true)
        {
          System.out.println(i + " - Location");
@@ -198,6 +203,7 @@
          System.out.println(Arrays.toString(dif) + ", " + ix);
        } // End if
 
+       // add 1 to index where error occured to correct it
        s[ix] =(s[ix] +1)%2;
        oHamming.add(s);
      } // End for
@@ -206,6 +212,7 @@
    // Convert Hamming ECC to Binary
    private void convertOutHamming()
    {
+      // put data bits into array
      for(int i=0;i<oHamming.size();i++)
      {
        int[] output = send.get(i);
@@ -273,11 +280,11 @@
       } // End else
 
       if(debug == true) System.out.println("Input: " + input + ".");
-      obj.convertString(input); // working
-      obj.convertInHamming(); // working
+      obj.convertString(input); 
+      obj.convertInHamming();
       obj.send();
       obj.errorCorrection();
-      obj.convertOutHamming(); // working
-      obj.convertBinary(); // working
+      obj.convertOutHamming();
+      obj.convertBinary();
    } // End main
  } // End Hamming
